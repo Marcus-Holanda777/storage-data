@@ -165,7 +165,7 @@ class Storage:
         ) as executor:
             
             rst = executor.map(
-                up_filename_name, 
+                up_filename_name,
                 list_map_bob_destino
             )
 
