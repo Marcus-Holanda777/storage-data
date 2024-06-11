@@ -104,7 +104,7 @@ class Storage:
         sub_path: str = None,
         index_sub: int = 4,
         max_workers: int = WORKERS
-    ):
+    ) -> Iterator[Blob | None]:
         if isinstance(path, str):
             path = Path(path)
         
