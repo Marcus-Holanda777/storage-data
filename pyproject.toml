@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "storage-data"
+version = "0.1.0"
+description = ""
+authors = ["Marcus Holanda <mvsh777@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+google-cloud-storage = "^2.16.0"
+python-dateutil = "^2.9.0.post0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
