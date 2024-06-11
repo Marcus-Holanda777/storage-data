@@ -51,6 +51,33 @@ class Storage:
         location: str = 'us-east1'
     ) -> Bucket:
         
+        """Criar bucket GCS.
+
+        Método para criar um bucket no `google-cloud-storage`.
+
+        Parâmetros
+        ----------
+        bucket_name: str
+            Nome do bucket que será criado.
+
+        storage_class: StorageClass
+            Define a classe de armazenamento.
+
+        - `STANDART`
+        - `NEARLINE`
+        - `CODLINE`
+        - `ARCHIVE`
+
+        location: str
+            Define a região onde será criado o bucket, ex: `US-EAST1`, 
+            `US-SOUTH1`
+            
+        Retorno
+        -------
+            Objeto do tipo `Bucket`
+
+        """
+        
         self.cliente.bucket(bucket_name)
         bucket = self.cliente.bucket(bucket_name)
         bucket.storage_class = storage_class
@@ -105,6 +132,7 @@ class Storage:
         index_sub: int = 4,
         max_workers: int = WORKERS
     ) -> Iterator[Blob | None]:
+        
         if isinstance(path, str):
             path = Path(path)
         
@@ -143,3 +171,22 @@ class Storage:
             )
 
         return rst
+    
+    def list_files(
+        self,
+        bucket: Bucket | str,
+        prefix: str = None,
+        delimiter: str = None
+    ) -> Iterator[Blob | None]:
+        
+        blobs = (
+            self.cliente
+             .list_blobs(
+                 bucket,
+                 prefix=prefix, 
+                 delimiter=delimiter
+            )
+        )
+        
+        for blob in blobs:
+            yield blob
