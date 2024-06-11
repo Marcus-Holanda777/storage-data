@@ -78,7 +78,6 @@ class Storage:
 
         """
         
-        self.cliente.bucket(bucket_name)
         bucket = self.cliente.bucket(bucket_name)
         bucket.storage_class = storage_class
         bucket.location = location
