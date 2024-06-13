@@ -21,6 +21,7 @@ class StorageClass(Enum):
 
 DEFAULT_CLASS = StorageClass.STANDARD
 WORKERS = min([8, cpu_count()])
+MEGA_BYTES = 1 << 20
 
 
 class SConnect:
@@ -79,7 +80,7 @@ class Storage:
         """
         
         bucket = self.cliente.bucket(bucket_name)
-        bucket.storage_class = storage_class
+        bucket.storage_class = storage_class.name
         bucket.location = location
 
         return self.cliente.create_bucket(bucket)
@@ -189,3 +190,23 @@ class Storage:
         
         for blob in blobs:
             yield blob
+
+    def download_file(
+        self,
+        bucket: Bucket, 
+        source_blob_name: str, 
+        destination_file_name: str
+    ) -> Blob | None:
+        
+        try:
+           
+           blob = bucket.blob(source_blob_name)
+           blob.download_to_filename(destination_file_name)
+           size_file = blob.size / MEGA_BYTES
+
+        except Exception as e:
+            print(f'File: {destination_file_name} .. ERROR {e}')
+        else:
+            print(f'File - {destination_file_name}, {size_file:.2f} MB .. OK')
+
+        return blob
