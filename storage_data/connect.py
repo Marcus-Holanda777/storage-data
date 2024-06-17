@@ -1,8 +1,7 @@
 from google.cloud.storage import (
     Client, 
     Bucket,
-    Blob,
-    transfer_manager
+    Blob
 )
 from typing import Any, Iterator
 from concurrent.futures import ThreadPoolExecutor
