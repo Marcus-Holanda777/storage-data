@@ -1,7 +1,8 @@
 from google.cloud.storage import (
     Client, 
     Bucket,
-    Blob
+    Blob,
+    transfer_manager
 )
 from typing import Any, Iterator
 from concurrent.futures import ThreadPoolExecutor
@@ -49,7 +50,7 @@ class Storage:
         self, 
         bucket_name: str,
         storage_class: StorageClass = DEFAULT_CLASS,
-        location: str = 'us-east1'
+        location: str = 'US-EAST1'
     ) -> Bucket:
         
         """Criar bucket GCS.
@@ -89,9 +90,11 @@ class Storage:
         self, 
         bucket: Bucket | str
     ) -> Bucket:
+        
         return self.cliente.get_bucket(bucket)
     
     def list_name_bucket(self) -> Iterator[str]:
+
         return (
             bk.name
             for bk in self.cliente.list_buckets()
@@ -202,7 +205,7 @@ class Storage:
            
            blob = bucket.blob(source_blob_name)
            blob.download_to_filename(destination_file_name)
-           size_file = blob.size / MEGA_BYTES
+           size_file = blob.size / (MEGA_BYTES)
 
         except Exception as e:
             print(f'File: {destination_file_name} .. ERROR {e}')
