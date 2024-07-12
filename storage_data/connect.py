@@ -7,9 +7,10 @@ from typing import Any, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from functools import partial
+import json
 
 from enum import Enum
-from os import cpu_count
+import os
 
 
 class StorageClass(Enum):
@@ -20,7 +21,7 @@ class StorageClass(Enum):
 
 
 DEFAULT_CLASS = StorageClass.STANDARD
-WORKERS = min([8, cpu_count()])
+WORKERS = min([8, os.cpu_count()])
 MEGA_BYTES = 1 << 20
 
 
@@ -28,7 +29,8 @@ class SConnect:
     def __init__(
         self, 
         credential: str = None
-    ) -> None:  
+    ) -> None: 
+         
         self.credential = credential
     
     def __call__(self, *args: Any, **kwds: Any) -> Client:
@@ -36,7 +38,17 @@ class SConnect:
             setattr(self, k, v)
         
         if self.credential:
-            return Client.from_service_account_json(self.credential)
+            if all(
+                [
+                    os.path.isfile(self.credential),
+                    self.credential.endswith('.json')
+                ]
+               ):
+
+               return Client.from_service_account_json(self.credential, *args, **kwds)
+
+            json_loads = json.loads(self.credential)
+            return Client.from_service_account_info(json_loads, *args, **kwds)
         
         return Client(*args, **kwds)
     
@@ -193,6 +205,17 @@ class Storage:
         for blob in blobs:
             yield blob
 
+    def get_blob_file(
+        self, 
+        bucket: Bucket | str,
+        blob_name,
+    ) -> Blob:
+        
+        if isinstance(bucket, str):
+           bucket = self.get_bucket(bucket)
+        
+        return bucket.get_blob(blob_name)
+
     def download_file(
         self,
         bucket: Bucket, 
@@ -202,9 +225,11 @@ class Storage:
         
         try:
            
-           blob = bucket.blob(source_blob_name)
+           blob = bucket.get_blob(source_blob_name)
+
+           size = blob.size
            blob.download_to_filename(destination_file_name)
-           size_file = blob.size / (MEGA_BYTES)
+           size_file = size / MEGA_BYTES
 
         except Exception as e:
             print(f'File: {destination_file_name} .. ERROR {e}')
