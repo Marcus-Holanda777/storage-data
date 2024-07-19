@@ -1,7 +1,8 @@
 from google.cloud.storage import (
     Client, 
     Bucket,
-    Blob
+    Blob,
+    transfer_manager
 )
 from typing import Any, Iterator
 from concurrent.futures import ThreadPoolExecutor
@@ -116,11 +117,18 @@ class Storage:
         bucket: Bucket,
         source_file_name: str,
         destination_blob_name: str,
-        timeout: int = 180
+        timeout: int = 180,
+        chunk_size: int = None
     ) -> Blob | None:
         
+        if chunk_size:
+            chunk_size = MEGA_BYTES * chunk_size
+        
         try:
-            blob = bucket.blob(destination_blob_name)
+            blob = bucket.blob(
+                destination_blob_name,
+                chunk_size=chunk_size
+            )
 
             blob.upload_from_filename(
                 source_file_name,
@@ -133,6 +141,27 @@ class Storage:
             print(f'Reset: {destination_blob_name} .. ERROR {e}')
             self.upload_file(bucket, source_file_name, destination_blob_name)
             
+        return blob
+    
+    def upload_large_file(
+        self, 
+        bucket: Bucket,
+        source_file_name: str,
+        destination_blob_name: str,
+        chunk_size: int = MEGA_BYTES * 32,
+        workers: int = WORKERS
+    ) -> Blob:
+        
+        blob = bucket.blob(destination_blob_name)
+
+        transfer_manager.upload_chunks_concurrently(
+            source_file_name, 
+            blob, 
+            chunk_size=chunk_size, 
+            max_workers=workers
+        )
+
+        print(f"File {source_file_name} uploaded to {destination_blob_name}.")
         return blob
     
     def upload_files(
