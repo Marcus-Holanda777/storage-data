@@ -1,6 +1,7 @@
 *.json
-/dist
-dist
 main.py
 /__pycache__
 __pycache__
+*.xlsx
+*$.xlsx
+*.csv
